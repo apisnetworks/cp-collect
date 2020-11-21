@@ -14,6 +14,10 @@ This is the aggregation client that collects and stores sites into a database fo
 - [ ] All servers under the same domain, e.g. svr1.mydomain.com, svr2.mydomain.com
 - [ ] Encryption key specified in .env or generated with `./proxy key:generate` 
 
+- Install vendor libraries
+  ```bash
+  composer install
+  ```
 - Copy .env.example to .env
   ```bash
   cp .env.example .env
@@ -25,12 +29,12 @@ This is the aggregation client that collects and stores sites into a database fo
   ```
 - For each linked server, create an API key
   ```bash
-  ssh server.domain.com
+  ssh svr1.mydomain.com
   cpcmd auth:create-api-key "Proxy API key"
   ```
   Then add to the panel-proxy database:
   ```bash
-  ./proxy server:add NODE-NAME
+  ./proxy server:add svr1
   ```
  - Collect all domains
    ```bash

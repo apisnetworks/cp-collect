@@ -1,26 +1,30 @@
 {
-    "name": "laravel-zero/laravel-zero",
-    "description": "The Laravel Zero Framework.",
-    "keywords": ["framework", "laravel", "laravel zero", "console", "cli"],
-    "homepage": "https://laravel-zero.com",
+    "name": "apisnetworks/cp-collect",
+    "description": "ApisCP site collector.",
+    "keywords": ["apiscp", "proxy", "console", "cli"],
+    "homepage": "https://apiscp.com",
     "type": "project",
     "license": "MIT",
     "support": {
-        "issues": "https://github.com/laravel-zero/laravel-zero/issues",
-        "source": "https://github.com/laravel-zero/laravel-zero"
+        "issues": "https://github.com/apisnetworks/cp-collect/issues",
+        "source": "https://github.com/apisnetworks/cp-collect"
     },
     "authors": [
         {
-            "name": "Nuno Maduro",
-            "email": "enunomaduro@gmail.com"
+            "name": "Matt Saladna",
+            "email": "matt@apisnetworks.com"
         }
     ],
     "require": {
-        "php": "^7.3",
+        "php": "^7.2",
+        "clue/soap-react": "^2.0",
+        "hmazter/laravel-schedule-list": "^2.2",
         "illuminate/database": "^8.0",
+        "illuminate/encryption": "^8.13",
         "illuminate/log": "^8.0",
         "laravel-zero/framework": "^8.0",
-        "nunomaduro/laravel-console-menu": "^3.1"
+        "nunomaduro/laravel-console-menu": "^3.1",
+        "react/child-process": "^0.6.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.8",
