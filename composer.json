@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "php": "^7.2",
+        "php": "^7.3",
         "clue/soap-react": "^2.0",
         "hmazter/laravel-schedule-list": "^2.2",
         "illuminate/database": "^8.0",
