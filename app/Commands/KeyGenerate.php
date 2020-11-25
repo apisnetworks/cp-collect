@@ -75,11 +75,14 @@
 		{
 			$currentKey = $this->laravel['config']['app.key'];
 
-			if (strlen($currentKey) !== 0 && (!$this->confirmToProceed())) {
+			if ($currentKey && !$this->confirmToProceed()) {
 				return false;
 			}
 
-			$this->updateEncryption($currentKey, $key);
+			if ($currentKey) {
+				$this->updateEncryption($currentKey, $key);
+			}
+
 			$this->writeNewEnvironmentFileWith($key);
 
 			return true;
