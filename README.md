@@ -14,27 +14,38 @@ This is the aggregation client that collects and stores sites into a database fo
 - [ ] All servers under the same domain, e.g. svr1.mydomain.com, svr2.mydomain.com
 - [ ] Encryption key specified in .env or generated with `./proxy key:generate` 
 
+- Create the cpcollect user
+  ```bash
+  useradd -rms /sbin/nologin cpcollect
+  cd /home/cpcollect
+  ```
+- Clone the repository
+  ```bash
+  sudo -u cpcollect git clone https://github.com/apisnetworks/cp-collect.git /home/cpcollect/cp-collect
+  cd cp-collect/
+  ```
 - Install vendor libraries
   ```bash
-  composer install
+  sudo -u cpcollect composer install
   ```
 - Copy .env.example to .env
   ```bash
-  cp .env.example .env
+  sudo -u cpcollect cp .env.example .env
   ```
 - Create database layout, edit .env. "mysql" and "postgresql" are acceptable `DB_CONNECTION` types.
   ```mysql
   CREATE DATABASE proxy;
   GRANT ALL on proxy.* to proxyuser@localhost IDENTIFIED BY 'MAKEUPYOUROWNPASSWORD';
   ```
-- For each linked server, create an API key
+  Update the .env file, set the `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE` fields.
+- For each linked server, create an API key, the command will return the key which you'll use on the Collector to add the server.
   ```bash
   ssh svr1.mydomain.com
   cpcmd auth:create-api-key "Proxy API key"
   ```
-  Then add to the panel-proxy database:
+  Then add to the cp-proxy database:
   ```bash
-  ./proxy server:add svr1
+  ./proxy server:add svr1 --auth=api --key=<api key returned from above>
   ```
  - Collect all domains
    ```bash
