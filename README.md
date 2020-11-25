@@ -38,6 +38,10 @@ This is the aggregation client that collects and stores sites into a database fo
   GRANT ALL on proxy.* to proxyuser@localhost IDENTIFIED BY 'MAKEUPYOUROWNPASSWORD';
   ```
   Update the .env file, set the `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE` fields.
+- Migrate the database
+  ```bash
+  sudo -u cpcollect ./proxy migrate
+  ```
 - For each linked server, create an API key, the command will return the key which you'll use on the Collector to add the server.
   ```bash
   ssh svr1.mydomain.com
