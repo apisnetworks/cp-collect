@@ -36,21 +36,22 @@ class Initial extends Migration
         });
 
         Schema::create('api_keys', function (Blueprint $db) {
-            if ($this->hasSqlite()) {
-                $db->string('api_key', 64)->unique();
-            } else {
-                $db->string('api_key', 64)->primary();
-            }
-            $db->string('username', 32);
-            $db->string('domain', 64)->nullable();
-            $db->integer('site_id', 4)->unsigned()->nullable();
-            $db->timestamp('last_used', 0);
-            $db->string('comment')->nullable();
-            $db->string('server_name', 64)->nullable();
-            $db->string('invoice', 34)->nullable();
-            $db->index(['username', 'domain']);
+			if ($this->hasSqlite()) {
+				$db->string('api_key', 64)->unique();
+			} else {
+				$db->string('api_key', 64)->primary();
+			}
+			$db->string('username', 32);
+			$db->string('domain', 64)->nullable();
+			$db->integer('site_id', false, true)->nullable();
+			$db->timestamp('last_used', 0);
+			$db->string('comment')->nullable();
+			$db->string('server_name', 64)->nullable();
+			$db->string('invoice', 34)->nullable();
+			$db->index(['username', 'domain']);
 
-            $db->foreign('server_name')->references('server_name')->on('servers')->
+
+			$db->foreign('server_name')->references('server_name')->on('servers')->
                 onDelete('cascade')->onUpdate('cascade');
         });
 
@@ -90,6 +91,11 @@ class Initial extends Migration
 
     private function hasSqlite(): string
     {
-        return app('config')->get('database.default');
+        return app('config')->get('database.default') === 'sqlite';
     }
+
+	private function hasPgsql(): string
+	{
+		return app('config')->get('database.default') === 'pgsql';
+	}
 }
