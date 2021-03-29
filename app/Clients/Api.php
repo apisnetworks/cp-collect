@@ -17,42 +17,44 @@
 		const DEFAULT_SERVER = 'localhost';
 		const PORT = 2082;
 		const SECURE_PORT = 2083;
-		const WSDL_PATH = '/apnscp.wsdl';
+		const WSDL_PATH = 'apnscp.wsdl';
 		/**
 		 * @var Api|\SoapClient
 		 */
 		protected $callee;
-		/**
-		 * @var LoopInterface
-		 */
-		protected $loop;
 
 		public function __construct(Server $s, LoopInterface $loop)
 		{
 			parent::__construct($s, $loop);
-			$this->create($s->auth_key, $s->ip ?: $s->server_name);
+			$port = self::SECURE_PORT;
+			$host = $s->server_name;
+			if (false !== strpos($host, ':')) {
+				[$host, $port] = explode($host, ':');
+			}
+			if ($host && false === strpos($host, '.')) {
+				$host .= '.' . env('DOMAIN', system("dnsdomainname"));
+			}
+			$this->create($s->auth_key, $host, $port);
 		}
 
 		/**
 		 * Create new API client
 		 *
 		 * @param       $key
-		 * @param null  $server
+		 * @param null $host
 		 * @param null  $port
 		 * @param array $ctor additional constructor arguments to SoapClient
 		 * @return self
 		 */
-		private function create($key, $server = null, $port = null, array $ctor = [])
+		private function create($key, $host = null, $port = self::PORT, array $ctor = [])
 		{
-			if (!$server) {
-				$server = self::DEFAULT_SERVER . ':' . self::PORT;
+			if (!$host) {
+				$host = self::DEFAULT_SERVER . ':' . self::PORT;
 			} else {
-				if (!$port) {
-					$port = self::PORT;
-				}
-				$server .= ':' . $port;
+				$host .=  ':' . $port;
 			}
-			$uri = 'http://' . $server . '/soap';
+			$proto = $port === self::PORT ? 'http' : 'https';
+			$uri = $proto . '://' . $host . '/soap';
 			$wsdl = str_replace('/soap', '/' . self::WSDL_PATH, $uri);
 			$connopts = $ctor + array(
 				'connection_timeout' => 30,
@@ -61,15 +63,17 @@
 				'trace'              => true
 			);
 			$connopts['location'] = $uri . '?authkey=' . $key;
+
 			$browser = new Browser($this->loop);
 
-			$browser->get($wsdl)->then(static function (ResponseInterface $response) use ($browser, $connopts) {
+			return $browser->get($wsdl)->then(static function (ResponseInterface $response) use ($browser, $connopts) {
 				return new Client($browser, (string)$response->getBody(), $connopts);
 			})->done(function ($client) {
 				$this->callee = new Proxy($client);
+			}, function (\Exception $e) {
+				echo $e->getMessage(), "\n\n", $e->getTraceAsString();
+				exit(1);
 			});
-
-			return $browser;
 		}
 
 		public function __call($function_name, $arguments): Promise
