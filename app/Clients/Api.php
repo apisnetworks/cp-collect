@@ -32,7 +32,7 @@
 				[$host, $port] = explode($host, ':');
 			}
 			if ($host && false === strpos($host, '.')) {
-				$host .= '.' . env('DOMAIN', system("dnsdomainname"));
+				$host .= '.' . (env('DOMAIN') ?: system("dnsdomainname"));
 			}
 			$this->create($s->auth_key, $host, $port);
 		}
