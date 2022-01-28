@@ -5,7 +5,8 @@
 	use App\Models\Server;
 	use React\EventLoop\LoopInterface;
 
-	abstract class CollectionClient {
+	abstract class CollectionClient
+	{
 
 		public const COLLECTION_CMD = [
 			'admin',   // module
@@ -42,4 +43,4 @@
 
 		abstract public function test(): bool;
 
-}
+	}

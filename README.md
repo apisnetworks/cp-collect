@@ -12,6 +12,7 @@ This is the aggregation client that collects and stores sites into a database fo
 
 ## Quickstart
 - [ ] All servers under the same domain, e.g. svr1.mydomain.com, svr2.mydomain.com
+
 - [ ] Encryption key specified in .env or generated with `./proxy key:generate` 
 
 - Create the cpcollect user
@@ -19,30 +20,41 @@ This is the aggregation client that collects and stores sites into a database fo
   useradd -rms /sbin/nologin cpcollect
   cd /home/cpcollect
   ```
+  
 - Clone the repository
   ```bash
   sudo -u cpcollect git clone https://github.com/apisnetworks/cp-collect.git /home/cpcollect/cp-collect
   cd cp-collect/
   ```
+  
 - Install vendor libraries
   ```bash
   sudo -u cpcollect composer install
   ```
+  
 - Copy .env.example to .env
   ```bash
   sudo -u cpcollect cp .env.example .env
   ```
+  
 - Create database layout, edit .env. "mysql" and "postgresql" are acceptable `DB_CONNECTION` types.
   ```mysql
   CREATE DATABASE proxy;
   GRANT ALL on proxy.* to proxyuser@localhost IDENTIFIED BY 'MAKEUPYOUROWNPASSWORD';
   ```
   Update the .env file, set the `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE` fields.
+  
+- Generate an application key. This will be used to encrypt your API credentials.
+  ```
+  sudo -u cpcollect ./proxy key:generate
+  ```
+  
 - Migrate the database
   ```bash
   sudo -u cpcollect ./proxy migrate:install
   sudo -u cpcollect ./proxy migrate
   ```
+  
 - For each linked server, create an API key, the command will return the key which you'll use on the Collector to add the server.
   ```bash
   ssh svr1.mydomain.com
@@ -52,14 +64,17 @@ This is the aggregation client that collects and stores sites into a database fo
   ```bash
   ./proxy server:add svr1 --auth=api --key=<api key returned from above>
   ```
+  
  - Collect all domains
    ```bash
    ./proxy collect
    ```
+   
  - List all domains
    ```bash
    ./proxy all
    ```
+   
 - Locate domain foo.com displaying the admin email + server name
    ```bash
    ./proxy --fields=name,email lookup foo.com

@@ -5,9 +5,11 @@
 	use App\CliArgumentMap;
 	use App\Contracts\CollectionInterface;
 	use Clue\React\SshProxy\SshProcessConnector;
+	use Exception;
 	use React\ChildProcess\Process;
 	use React\Promise\Deferred;
 	use React\Promise\Promise;
+	use RuntimeException;
 
 	class Ssh extends CollectionClient
 	{
@@ -27,6 +29,19 @@
 			$this->disconnect();
 		}
 
+		/**
+		 * Disconnect from server
+		 *
+		 * @return void
+		 */
+		private function disconnect(): void
+		{
+			if (!is_null($this->client)) {
+				$this->client->close();
+				$this->client = null;
+			}
+		}
+
 		public function collect(): Promise
 		{
 			$cmd = '. /etc/sysconfig/apnscp ; /bin/sh -c "${APNSCP_ROOT:-/usr/local/apnscp}"' . escapeshellarg("/bin/cmd -o json " . $this->getCommand());
@@ -44,11 +59,11 @@
 			$this->client->on('exit', static function ($exit) use ($deferred, &$data, &$err) {
 				$json = json_decode($data, true);
 				if ($exit !== 0) {
-					return $deferred->reject(new \RuntimeException($err));
+					return $deferred->reject(new RuntimeException($err));
 				}
 				if (null === $json) {
 
-					throw new \RuntimeException("Malformed JSON encountered: " . $json);
+					throw new RuntimeException("Malformed JSON encountered: " . $json);
 				}
 				$deferred->resolve($json);
 			});
@@ -56,28 +71,9 @@
 			return $deferred->promise();
 		}
 
-
-
-		/**
-		 * Test handler
-		 *
-		 * @return bool
-		 */
-		public function test(): bool
+		protected function getCommand(): string
 		{
-			$code = null;
-			$this->connect()->on('exit', static function ($ret) use (&$code) {
-				$code = $ret;
-			});
-			$err = '';
-			$this->client->stderr->on('data', function ($chunk) use (&$err) {
-				$err .= $chunk;
-			});
-			$this->loop->run();
-			if ($code !== 0) {
-				throw new \RuntimeException("Failed to verify " . $this->server->server_name . ": " . $err);
-			}
-			return $code === 0;
+			return CliArgumentMap::map(...CollectionClient::COLLECTION_CMD);
 		}
 
 		/**
@@ -90,17 +86,17 @@
 			$host = $this->server->ip ?? $this->server->server_name;
 			$port = 22;
 			if (false !== strpos($host, ':')) {
-				[$host,$port] = explode($host, ':');
+				[$host, $port] = explode($host, ':');
 			}
 			if (!is_readable($key = $this->getKeyPath())) {
-				throw new \Exception("Cannot access key file ${key}");
+				throw new Exception("Cannot access key file ${key}");
 			}
 
 			$opts = [
 				'PreferredAuthentications' => 'publickey',
-				'PubkeyAuthentication' => 'yes',
-				'UserKnownHostsFile' => '/dev/null',
-				'StrictHostKeyChecking' => 'no'
+				'PubkeyAuthentication'     => 'yes',
+				'UserKnownHostsFile'       => '/dev/null',
+				'StrictHostKeyChecking'    => 'no'
 			];
 
 			$opts = array_map(static function ($v, $k) {
@@ -119,16 +115,25 @@
 		}
 
 		/**
-		 * Disconnect from server
+		 * Get key path
 		 *
-		 * @return void
+		 * @return string
 		 */
-		private function disconnect(): void
+		protected function getKeyPath(): string
 		{
-			if (!is_null($this->client)) {
-				$this->client->close();
-				$this->client = null;
+			$this->fp = tmpfile();
+			$key = $this->key();
+			if (false !== ($pos = strpos($key, ':'))) {
+				$key = substr($key, ++$pos);
 			}
+			fwrite($this->fp, $key);
+
+			return stream_get_meta_data($this->fp)['uri'];
+		}
+
+		private function key(): string
+		{
+			return $this->server->auth_key;
 		}
 
 		/**
@@ -142,32 +147,30 @@
 			if (false !== strpos($key, ':')) {
 				return strtok($key, ':');
 			}
+
 			return get_current_user();
 		}
 
 		/**
-		 * Get key path
+		 * Test handler
 		 *
-		 * @return string
+		 * @return bool
 		 */
-		protected function getKeyPath(): string
+		public function test(): bool
 		{
-			$this->fp = tmpfile();
-			$key = $this->key();
-			if (false !== ($pos = strpos($key, ':'))) {
-				$key = substr($key, ++$pos);
+			$code = null;
+			$this->connect()->on('exit', static function ($ret) use (&$code) {
+				$code = $ret;
+			});
+			$err = '';
+			$this->client->stderr->on('data', function ($chunk) use (&$err) {
+				$err .= $chunk;
+			});
+			$this->loop->run();
+			if ($code !== 0) {
+				throw new RuntimeException("Failed to verify " . $this->server->server_name . ": " . $err);
 			}
-			fwrite($this->fp, $key);
-			return stream_get_meta_data($this->fp)['uri'];
-		}
 
-		private function key(): string
-		{
-			return $this->server->auth_key;
-		}
-
-		protected function getCommand(): string
-		{
-			return CliArgumentMap::map(...CollectionClient::COLLECTION_CMD);
+			return $code === 0;
 		}
 	}

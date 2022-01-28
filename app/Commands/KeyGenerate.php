@@ -103,6 +103,7 @@
 
 			$this->laravel->singleton('encrypter', function ($app) use ($new) {
 				$config = $app->make('config')->get('app');
+
 				return new Encrypter($this->parseKey($new), $config['cipher']);
 			});
 		}

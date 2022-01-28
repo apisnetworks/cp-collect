@@ -3,8 +3,6 @@
 	namespace App\Commands;
 
 	use App\Models\Server;
-	use Illuminate\Console\Scheduling\Schedule;
-	use Illuminate\Support\Arr;
 	use LaravelZero\Framework\Commands\Command;
 
 	class ServerList extends Command
