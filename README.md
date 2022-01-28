@@ -98,7 +98,34 @@ ApisCP can accept SSH keys for its user. Create a directory `mkdir --mode=0700 /
 and place the public key in `.ssh/authorized_keys`.
 :::
 
+### Deleted domains
+Domains are soft deleted from the database when removed. These are excluded from queries unless the `status` field is explicitly requested.
+
+```bash
+./proxy lookup apisnetworks.test
+# +--------+-----------+---------+
+# | Domain | Node name | Invoice |
+# +--------+-----------+---------+
+
+./proxy lookup --fields=domain,status apisnetworks.test
+# +-------------------+---------+
+# | Domain            | Status  |
+# +-------------------+---------+
+# | apisnetworks.test | deleted |
+# +-------------------+---------+
+```
+
+Soft deletions may be pruned from the database using `proxy clean`. Verbosity controls whether just domain domain (`-v`) or domain and server name (`-vvv`) are listed.
+
+```bash
+./proxy -vvv clean
+# 8mlstnomyqi6gcdz.test localhost
+# addon-domain-test.com localhost
+# Deleted 2 domains from database
+```
+
 ### Security
+
 A fully-qualified domain name must not be used. A domain should always be
 specified in **[auth]** => **server_format** to prevent an attacker from specifying 
 *admin/some.other.server.com* as the username.

@@ -58,8 +58,24 @@
 
 			$this->table(
 				collect($fields->flip())->replace(self::FIELD_LABELS)->intersectByKeys($fields->flip()),
-				Domain::where('domain', '=', $this->argument('name'))->get($fields->values()->toArray())->toArray()
+				$this->retrieveDomains($fields)->toArray()
 			);
+		}
+
+		protected function retrieveDomains(Collection $fields): Collection
+		{
+			$columns = $fields->values()->toArray();
+			$eloquent = (new Domain)->newFromBuilder();
+
+			if ($this->hasArgument('name')) {
+				$eloquent = $eloquent->where('domain', '=', $this->argument('name'));
+			}
+
+			if (!$fields->contains("status")) {
+				$eloquent = $eloquent->where('status', '!=', 'deleted');
+			}
+
+			return $eloquent->get($columns);
 		}
 
 		protected function parseFields(): Collection

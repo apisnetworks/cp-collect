@@ -41,8 +41,7 @@
 			$server = $this->argument('name');
 			$record = Server::whereServerName($server);
 			if ($record->exists()) {
-				$record->delete();
-				//throw new \InvalidArgumentException("Server ${server} already exists. Delete server first");
+				throw new \InvalidArgumentException("Server ${server} already exists. Delete server first");
 			}
 			$record = new Server();
 
