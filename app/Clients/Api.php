@@ -70,7 +70,7 @@
 
 			return $browser->get($wsdl)->then(static function (ResponseInterface $response) use ($browser, $connopts) {
 				return new Client($browser, (string)$response->getBody(), $connopts);
-			})->done(function ($client) {
+			})->done(function (Client $client) {
 				$this->callee = new Proxy($client);
 			}, function (Exception $e) {
 				echo $e->getMessage(), "\n\n", $e->getTraceAsString();
@@ -112,13 +112,11 @@
 			) {
 				if ($ret !== null || $ctr >= 5) {
 					$ctr = 0;
-
 					return $ret;
 				}
 				// 50 ms sleep
 				usleep(50000);
 				$ctr++;
-
 				return $this->__call($function_name, $arguments);
 			});
 

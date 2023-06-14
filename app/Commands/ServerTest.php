@@ -36,10 +36,8 @@
 			$server = $this->argument('name');
 			$record = Server::findOrFail($server);
 			$client = Broker::create($record, Loop::get());
-			try {
-				$client->test();
-			} catch (\Exception $e) {
-
+			if (!$client->test()) {
+				throw new \RuntimeException("Failed to verify connection");
 			}
 
 			$this->info("Server {$server} passes connectivity test!");
