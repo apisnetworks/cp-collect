@@ -16,20 +16,19 @@
         }
     ],
     "require": {
-        "php": "^7.3",
+        "php": "^7.3|^8",
         "clue/soap-react": "^2.0",
-        "hmazter/laravel-schedule-list": "^2.2",
-        "illuminate/database": "^8.0",
+        "illuminate/database": "^8",
         "illuminate/encryption": "^8.13",
-        "illuminate/log": "^8.0",
-        "laravel-zero/framework": "^8.0",
+        "illuminate/log": "^8",
+        "laravel-zero/framework": "^8",
         "nunomaduro/laravel-console-menu": "^3.1",
         "react/child-process": "^0.6.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.8",
         "doctrine/dbal": "^2.12",
-        "fzaninotto/faker": "^1.9",
+        "fakerphp/faker": "^1.20",
         "illuminate/view": "^8.11",
         "mockery/mockery": "^1.4.2",
         "phpunit/phpunit": "^9.3"

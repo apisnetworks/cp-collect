@@ -9,6 +9,7 @@
 	use Illuminate\Support\Facades\DB;
 	use LaravelZero\Framework\Commands\Command;
 	use React\EventLoop\Factory;
+	use React\EventLoop\Loop;
 	use Throwable;
 	use function array_sum;
 	use function count;
@@ -36,7 +37,7 @@
 		 */
 		public function handle()
 		{
-			$loop = Factory::create();
+			$loop = Loop::get();
 			$servers = Server::all();
 			$bar = $this->output->createProgressBar(count($servers));
 

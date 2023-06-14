@@ -30,7 +30,7 @@
 		{
 			$fields = $this->parseFields();
 			$this->table(
-				collect(static::FIELD_LABELS)->intersectByKeys($fields->flip()),
+				collect(static::FIELD_LABELS)->intersectByKeys($fields->flip())->toArray(),
 				$this->retrieveDomains($fields)->toArray()
 			);
 		}
