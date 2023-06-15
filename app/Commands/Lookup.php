@@ -57,7 +57,7 @@
 			$fields = $this->parseFields();
 
 			$this->table(
-				collect($fields->flip())->replace(self::FIELD_LABELS)->intersectByKeys($fields->flip()),
+				collect($fields->flip())->replace(self::FIELD_LABELS)->intersectByKeys($fields->flip())->toArray(),
 				$this->retrieveDomains($fields)->toArray()
 			);
 		}
