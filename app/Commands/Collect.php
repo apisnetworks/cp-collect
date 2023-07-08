@@ -6,6 +6,7 @@
 	use App\Clients\CollectionClient;
 	use App\Models\Domain;
 	use App\Models\Server;
+	use Illuminate\Database\QueryException;
 	use Illuminate\Support\Facades\DB;
 	use LaravelZero\Framework\Commands\Command;
 	use React\EventLoop\Factory;
@@ -64,11 +65,16 @@
 								] + $this->map($meta, $site, $client);
 						}
 
-						DB::transaction(function () use ($client, $sites, $site) {
-							Domain::where('server_name', $client->getName())->where('site_id',
-								(int)substr($site, 4))->delete();
-							Domain::insert($sites);
-						});
+						try {
+							DB::transaction(function () use ($client, $sites, $site) {
+								Domain::where('server_name', $client->getName())->where('site_id',
+									(int)substr($site, 4))->delete();
+								Domain::insert($sites);
+							});
+						} catch (QueryException $e) {
+							$this->error("Failed to update records: " . $e->getMessage());
+							exit(1);
+						}
 					}
 					Domain::where('server_name', $client->getName())->whereNotIn('site_id',
 						$siteIds)->update(['status' => 'deleted']);

@@ -83,7 +83,8 @@ This is the aggregation client that collects and stores sites into a database fo
 ### Alternative configuration
 #### Public key
 Use `server:add` without specifying `--auth=` or `--key`. `native` authentication is assumed, which will use `ssh` with
-`~/.ssh/id_rsa.pub` as its key.
+`~/.ssh/id_rsa.pub` as its key. The owner of the "proxy" file will be used as the SSH user. To override this user, specify
+`--key=USER:` as the key.
 
 #### Custom public key
 Use `server:add --auth=ssh --key=USER:KEY-RAW` where `KEY-RAW` is the raw key and `USER:` is an optional user to authenticate
@@ -133,7 +134,7 @@ specified in **[auth]** => **server_format** to prevent an attacker from specify
 Login keys are encrypted within the database in `auth_key` column of `servers`. The encryption key
 is stored in `.env` within the filesystem.
 
-Running `./proxy key:generate` will roll `APP_KEY` and update all encrypted auth data. 
+Running `./proxy key:generate` will roll `APP_KEY` and update all encrypted auth data.
 
 ## Documentation
 

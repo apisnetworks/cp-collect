@@ -12,16 +12,6 @@
 	class Native extends Ssh
 	{
 		/**
-		 * Get active username
-		 *
-		 * @return string
-		 */
-		protected function getUsername()
-		{
-			return get_current_user();
-		}
-
-		/**
 		 * Get SSH key path
 		 *
 		 * @return string

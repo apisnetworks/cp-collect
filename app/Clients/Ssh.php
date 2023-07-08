@@ -166,6 +166,10 @@
 			$this->client->stderr->on('data', function ($chunk) use (&$err) {
 				$err .= $chunk;
 			});
+			$this->client->stdout->on('data', function ($chunk) use (&$err) {
+				$err .= $chunk;
+			});
+
 			$this->loop->run();
 			if ($code !== 0) {
 				throw new RuntimeException("Failed to verify " . $this->server->server_name . ": " . $err);

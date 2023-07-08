@@ -4,13 +4,21 @@
 
 	use App\Contracts\CollectionInterface;
 	use App\Models\Server;
+	use App\Regex;
 	use Clue\React\Soap\Client;
 	use Clue\React\Soap\Proxy;
 	use Exception;
 	use Psr\Http\Message\ResponseInterface;
+	use React\Dns\Config\Config as DnsConfig;
+	use React\Dns\Config\HostsFile;
+	use React\Dns\Query\ExecutorInterface;
+	use React\Dns\Query\HostsFileExecutor;
+	use React\Dns\Query\UdpTransportExecutor;
+	use React\Dns\Resolver\Resolver;
 	use React\EventLoop\LoopInterface;
 	use React\Http\Browser;
 	use React\Promise\Promise;
+	use React\Socket\Connector;
 	use SoapClient;
 
 	class Api extends CollectionClient
@@ -48,7 +56,7 @@
 		 * @param array $ctor additional constructor arguments to SoapClient
 		 * @return self
 		 */
-		private function create($key, $host = null, $port = self::PORT, array $ctor = [])
+		private function create(string $key, string $host = null, int $port = self::PORT, array $ctor = [])
 		{
 			if (!$host) {
 				$host = self::DEFAULT_SERVER . ':' . self::PORT;
@@ -58,15 +66,19 @@
 			$proto = $port === self::PORT ? 'http' : 'https';
 			$uri = $proto . '://' . $host . '/soap';
 			$wsdl = str_replace('/soap', '/' . self::WSDL_PATH, $uri);
+
 			$connopts = $ctor + array(
 					'connection_timeout' => 30,
 					'location'           => $uri,
 					'uri'                => 'urn:apnscp.api.soap',
 					'trace'              => true
 				);
-			$connopts['location'] = $uri . '?authkey=' . $key;
+			$connopts['location'] = $uri;
+			$connector = new Connector($this->loop, [
+				'dns' => (new Resolver($this->stubHostsFile(strtok($host, ':'), $this->server->ip)))
+			]);
 
-			$browser = new Browser($this->loop);
+			$browser = (new Browser($this->loop, $connector))->withHeader('Auth-Key', $key);
 
 			return $browser->get($wsdl)->then(static function (ResponseInterface $response) use ($browser, $connopts) {
 				return new Client($browser, (string)$response->getBody(), $connopts);
@@ -78,11 +90,30 @@
 			});
 		}
 
+		private function stubHostsFile(string $domain, ?string $ip): ExecutorInterface
+		{
+			if (!preg_match(Regex::HOSTNAME, $domain)) {
+				throw new \RuntimeException('Invalid domain');
+			}
+			$ns = DnsConfig::loadSystemConfigBlocking()->nameservers;
+			$executor = new UdpTransportExecutor($ns[array_rand($ns)], $this->loop);
+			if (!$ip) {
+				return $executor;
+			}
+
+			return new HostsFileExecutor(
+				new HostsFile("$ip $domain"),
+				$executor
+			);
+		}
+
 		public function test(): bool
 		{
 			$resp = null;
 			$this->common_whoami()->done(static function ($val) use (&$resp) {
 				$resp = $val;
+			}, static function (\Exception $e) {
+				dd($e);
 			});
 			$this->loop->run();
 
