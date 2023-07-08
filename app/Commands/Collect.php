@@ -69,13 +69,14 @@
 							DB::transaction(function () use ($client, $sites, $site) {
 								Domain::where('server_name', $client->getName())->where('site_id',
 									(int)substr($site, 4))->delete();
-								Domain::insert($sites);
+								Domain::upsert($sites, ['domain', 'service_name'], ['site_id', 'status']);
 							});
 						} catch (QueryException $e) {
 							$this->error("Failed to update records: " . $e->getMessage());
 							exit(1);
 						}
 					}
+
 					Domain::where('server_name', $client->getName())->whereNotIn('site_id',
 						$siteIds)->update(['status' => 'deleted']);
 					$this->info(
