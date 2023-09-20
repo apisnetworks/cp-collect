@@ -69,7 +69,7 @@
 							DB::transaction(function () use ($client, $sites, $site) {
 								Domain::where('server_name', $client->getName())->where('site_id',
 									(int)substr($site, 4))->delete();
-								Domain::upsert($sites, ['domain', 'service_name'], ['site_id', 'status']);
+								Domain::upsert($sites, ['domain', 'server_name'], ['site_id', 'status']);
 							});
 						} catch (QueryException $e) {
 							$this->error("Failed to update records: " . $e->getMessage());
